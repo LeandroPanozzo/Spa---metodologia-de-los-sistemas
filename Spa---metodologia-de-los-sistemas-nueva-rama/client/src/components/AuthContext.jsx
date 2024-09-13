@@ -2,6 +2,9 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
 
+// Importa la URL base de tu archivo .env
+const API_URL = import.meta.env.VITE_API_URL;
+
 // Crear el contexto
 const AuthContext = createContext();
 
@@ -9,7 +12,10 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true); // Estado de carga
-  const [isStaff, setIsStaff] = useState(false)
+  const [isStaff, setIsStaff] = useState(false);
+
+  // Configura la URL base para Axios
+  axios.defaults.baseURL = API_URL;
 
   // Función para manejar el login
   const login = () => {
@@ -36,9 +42,9 @@ export function AuthProvider({ children }) {
         // Decodifica el token para obtener el payload
         const decodedToken = jwtDecode(accessToken);
         const userId = decodedToken.user_id; // Asegúrate de que 'user_id' es el campo correcto en tu payload
-  
+
         // Realiza la solicitud para obtener los detalles del usuario
-        const response = await axios.get(`http://localhost:8000/sentirseBien/users/${userId}/`, {
+        const response = await axios.get(`/users/${userId}/`, {
           headers: {
             Authorization: `Bearer ${accessToken}` // Incluye el token de acceso en los encabezados
           }
@@ -53,7 +59,6 @@ export function AuthProvider({ children }) {
     }
   };
 
-
   // Efecto para verificar autenticación al cargar la aplicación
   useEffect(() => {
     // Verificar si hay un token de acceso en localStorage
@@ -64,14 +69,12 @@ export function AuthProvider({ children }) {
       setIsAuthenticated(true);
       checkIfStaff();
       setLoading(false); // Una vez terminada la verificación, desactivar la carga
-    }
-    else {
+    } else {
       setLoading(false);
     }
   }, []); // Ejecutar solo al montar el componente
 
   if (loading) {
-    
     return <p>Loading...</p>; // Muestra un mensaje de carga mientras se verifica el token
   }
 

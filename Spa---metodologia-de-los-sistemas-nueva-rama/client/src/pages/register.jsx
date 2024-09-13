@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom'; // Importa Link
 import { useAuth } from '../components/AuthContext'; // Importa el hook de autenticación
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export function Register() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -24,7 +26,7 @@ export function Register() {
     }
 
     try {
-      const response = await axios.post('http://localhost:8000/sentirseBien/api/v1/register/', {
+      const response = await axios.post(`${API_URL}/register/`, {
         username,
         email,
         password,

@@ -42,7 +42,7 @@ export function QueryAndResponseComponent() {
         originalRequest._retry = true;
         try {
           const refreshToken = localStorage.getItem('refresh_token');
-          const response = await axios.post('http://localhost:8000/sentirseBien/api/v1/token/refresh/', { refresh: refreshToken });
+          const response = await axios.post(`${import.meta.env.VITE_API_URL}/token/refresh/`, { refresh: refreshToken });
           localStorage.setItem('access_token', response.data.access);
           axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
           return axios(originalRequest);
@@ -57,7 +57,7 @@ export function QueryAndResponseComponent() {
 
   const fetchQueries = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/sentirseBien/api/v1/queries/');
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/queries/`);
       setQueries(response.data);
     } catch (error) {
       setError('Error al cargar las consultas');
@@ -66,7 +66,7 @@ export function QueryAndResponseComponent() {
 
   const fetchResponses = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/sentirseBien/api/v1/responses/');
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/responses/`);
       setResponses(response.data);
     } catch (error) {
       setError('Error al cargar las respuestas');
@@ -76,7 +76,7 @@ export function QueryAndResponseComponent() {
   const handleNewQuerySubmit = async (event) => {
     event.preventDefault();
     try {
-      await axios.post('http://localhost:8000/sentirseBien/api/v1/queries/', newQuery);
+      await axios.post(`${import.meta.env.VITE_API_URL}/queries/`, newQuery);
       setNewQuery({ title: '', content: '' });
       fetchQueries();
     } catch (error) {
@@ -87,7 +87,7 @@ export function QueryAndResponseComponent() {
   const handleNewResponseSubmit = async (event) => {
     event.preventDefault();
     try {
-      await axios.post('http://localhost:8000/sentirseBien/api/v1/responses/', newResponse);
+      await axios.post(`${import.meta.env.VITE_API_URL}/responses/`, newResponse);
       setNewResponse({ content: '', query: null });
       fetchQueries();
     } catch (error) {
@@ -97,10 +97,10 @@ export function QueryAndResponseComponent() {
 
   const handleDeleteQueries = async (id) => {
     try {
-      await axios.delete(`http://localhost:8000/sentirseBien/api/v1/queries/${id}/`);
-      setQueries(queries.filter(appointment => appointment.id !== id));
+      await axios.delete(`${import.meta.env.VITE_API_URL}/queries/${id}/`);
+      setQueries(queries.filter(query => query.id !== id));
     } catch (error) {
-      setError('Error al eliminar la cita');
+      setError('Error al eliminar la consulta');
     }
   };
 
@@ -151,7 +151,7 @@ export function QueryAndResponseComponent() {
               {queryMapped.responses.map((response) => (
                 <div key={response.id} style={styles.response}>
                   <p style={styles.pastelGreenText}>{response.content}</p>
-                  <p style= {styles.pastelWhiteText}>Respondido por: {response.user.username}</p>
+                  <p style={styles.pastelWhiteText}>Respondido por: {response.user.username}</p>
                 </div>
               ))}
             </div>
@@ -224,19 +224,11 @@ const styles = {
   errorText: {
     color: 'red',
   },
-  title: {
-    color: '#FFB6C1 !important', // Forzando el color rosa pastel
-  },
   response: {
     marginBottom: '10px',
     padding: '10px',
     backgroundColor: '#eccacf',
     borderRadius: '4px',
-  },
-  responseAuthor: {
-    fontSize: '0.8em',
-    color: '#77DD77 !important', // Forzando el color verde pastel para el autor de la respuesta
-    marginTop: '5px',
   },
   pastelGreenText: {
     color: '#28a745',  // Verde pastel
@@ -245,6 +237,6 @@ const styles = {
     color: '#fc9ba9',  // Rosa pastel
   },
   pastelWhiteText: {
-    color: '#ffffff',  // Rosa pastel
+    color: '#ffffff',  // Blanco pastel
   },
 };

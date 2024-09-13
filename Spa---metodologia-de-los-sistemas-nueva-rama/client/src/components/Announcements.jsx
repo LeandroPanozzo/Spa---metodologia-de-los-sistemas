@@ -5,6 +5,9 @@ import axios from 'axios';
 import { useAuth } from '../components/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
+// Importa la URL base de tu archivo .env
+const API_URL = import.meta.env.VITE_API_URL;
+
 export function Announcements() {
 
   const [announcements, setAnnouncements] = useState([]);
@@ -17,6 +20,8 @@ export function Announcements() {
   const announcementsPerPage = 6; // Cambia este valor para mostrar más o menos anuncios por página
   const navigate = useNavigate();
 
+  // Configura la URL base para Axios
+  axios.defaults.baseURL = API_URL;
 
   useEffect(() => {
     fetchAnnouncements();
@@ -24,7 +29,7 @@ export function Announcements() {
 
   const fetchAnnouncements = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/sentirseBien/api/v1/announcements/');
+      const response = await axios.get('/announcements/');
       setAnnouncements(response.data);
     } catch (error) {
       setError('Error al cargar los anuncios');
@@ -40,7 +45,7 @@ export function Announcements() {
     };
 
     try {
-      const response = await axios.post('http://localhost:8000/sentirseBien/api/v1/announcements/', announcementData);
+      const response = await axios.post('/announcements/', announcementData);
       setAnnouncements([response.data, ...announcements]);
       setAnnouncementTitle('');
       setAnnouncementContent('');
@@ -53,7 +58,7 @@ export function Announcements() {
 
   const handleDeleteAnnouncement = async (id) => {
     try {
-      await axios.delete(`http://localhost:8000/sentirseBien/api/v1/announcements/${id}/`);
+      await axios.delete(`/announcements/${id}/`);
       setAnnouncements(announcements.filter(announcement => announcement.id !== id));
     } catch (error) {
       setError('Error al eliminar el anuncio');
@@ -80,7 +85,7 @@ export function Announcements() {
         originalRequest._retry = true;
         try {
           const refreshToken = localStorage.getItem('refresh_token');
-          const response = await axios.post('http://localhost:8000/sentirseBien/api/v1/token/refresh/', { refresh: refreshToken });
+          const response = await axios.post('/token/refresh/', { refresh: refreshToken });
           localStorage.setItem('access_token', response.data.access);
           axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
           return axios(originalRequest);
@@ -92,7 +97,6 @@ export function Announcements() {
       return Promise.reject(error);
     }
   );
-
 
   // Pagination logic
   const indexOfLastAnnouncement = currentPage * announcementsPerPage;

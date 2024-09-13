@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useAuth } from '../components/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export function CommentsList() {
   const [posts, setPosts] = useState([]);
   const [titulo, setTitulo] = useState('');
@@ -18,7 +20,7 @@ export function CommentsList() {
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/sentirseBien/api/v1/posts/');
+      const response = await axios.get(`${API_URL}/posts/`);
       setPosts(response.data);
     } catch (error) {
       setError('Error al cargar las publicaciones');
@@ -34,7 +36,7 @@ export function CommentsList() {
     };
 
     try {
-      const response = await axios.post('http://localhost:8000/sentirseBien/api/v1/posts/', postData);
+      const response = await axios.post(`${API_URL}/posts/`, postData);
       setPosts([...posts, response.data]);
       setTitulo('');
       setContenido('');
@@ -44,40 +46,43 @@ export function CommentsList() {
     }
   };
 
-  // Configuración de interceptores de Axios
-  axios.interceptors.request.use(
-    (config) => {
-      const token = localStorage.getItem('access_token');
-      if (token) {
-        config.headers['Authorization'] = `Bearer ${token}`;
-      }
-      return config;
-    },
-    (error) => {
-      return Promise.reject(error);
-    }
-  );
-
-  axios.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-      const originalRequest = error.config;
-      if (error.response.status === 401 && !originalRequest._retry) {
-        originalRequest._retry = true;
-        try {
-          const refreshToken = localStorage.getItem('refresh_token');
-          const response = await axios.post('http://localhost:8000/sentirseBien/api/v1/token/refresh/', { refresh: refreshToken });
-          localStorage.setItem('access_token', response.data.access);
-          axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
-          return axios(originalRequest);
-        } catch (refreshError) {
-          logout();
-          return Promise.reject(refreshError);
+  const setupAxiosInterceptors = () => {
+    axios.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem('access_token');
+        if (token) {
+          config.headers['Authorization'] = `Bearer ${token}`;
         }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+
+    axios.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
+        if (error.response.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+          try {
+            const refreshToken = localStorage.getItem('refresh_token');
+            const response = await axios.post(`${API_URL}/token/refresh/`, { refresh: refreshToken });
+            localStorage.setItem('access_token', response.data.access);
+            axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
+            return axios(originalRequest);
+          } catch (refreshError) {
+            logout();
+            return Promise.reject(refreshError);
+          }
+        }
+        return Promise.reject(error);
       }
-      return Promise.reject(error);
-    }
-  );
+    );
+  };
+
+  useEffect(() => {
+    setupAxiosInterceptors();
+  }, []);
 
   return (
     <div style={styles.container}>
@@ -186,8 +191,5 @@ const styles = {
   },
   pastelPinkText: {
     color: '#fc9ba9',  // Rosa pastel
-  },
-  pastelWhiteText: {
-    color: '#ffffff',  // Rosa pastel
   },
 };

@@ -11,11 +11,13 @@ export function InicioSesion() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  const apiUrl = import.meta.env.VITE_API_URL; // Accede a la URL de la API desde el archivo .env
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     try {
-      const response = await axios.post('http://localhost:8000/sentirseBien/api/v1/token/', {
+      const response = await axios.post(`${apiUrl}/token/`, {
         username,
         password,
       });
